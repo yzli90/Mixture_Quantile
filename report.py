@@ -12,17 +12,17 @@ class RiskReporter:
     def __init__(self, y_true, p_levels, model_preds, model_densities=None, output_dir="."):
         """
         Args:
-            model_preds: dict, {'QM': y_pred_qm, 'GMM': y_pred_gmm}
+            model_preds: dict, {'MQ': y_pred_qm, 'GMM': y_pred_gmm}
             model_densities: dict, (Optional)
-                             {'QM': (y_vals, density_vals), 'GMM': (y_vals, density_vals)}
+                             {'MQ': (y_vals, density_vals), 'GMM': (y_vals, density_vals)}
         """
         self.y_true = y_true
         self.p_levels = p_levels
         self.preds = model_preds
         self.densities = model_densities
         self.output_dir = output_dir
-        self.colors = {'QM': 'blue', 'GMM': 'red', 'GPD': 'green'}
-        self.styles = {'QM': '-', 'GMM': '--', 'GPD': '-.'}
+        self.colors = {'MQ': 'blue', 'GMM': 'red', 'GPD': 'green'}
+        self.styles = {'MQ': '-', 'GMM': '--', 'GPD': '-.'}
 
     def _save_and_show(self, title):
         clean_title = title.replace(" ", "_").replace("$", "").replace("\\", "").replace("{", "").replace("}",
@@ -99,7 +99,7 @@ class RiskReporter:
         self._save_and_show(title)
 
     def plot_qq(self, title="QQ Plot"):
-        plt.figure(figsize=(8, 8))
+        plt.figure(figsize=(8, 6))
         ax = plt.gca()
 
         all_preds = np.concatenate([p for p in self.preds.values()])

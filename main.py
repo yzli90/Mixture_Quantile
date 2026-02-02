@@ -2,6 +2,7 @@
 import numpy as np
 import pandas as pd
 import datetime
+import matplotlib.pyplot as plt
 import os
 from basis_generators \
     import GB2Basis, LomaxBasis, SkewTBasis, NormalBasis, StudentTBasis, GPDBasis, SegmentedGenerator, ISplineBasis
@@ -15,22 +16,33 @@ output_dir = dataset
 if not os.path.exists(output_dir):
     os.makedirs(output_dir)
 spline = True
-if spline: n_knots = 5
+if spline: n_knots = 10
 left_tail, right_tail = False, True
 card = False
 if left_tail: left_thred = 0.25 + 0.01
 if right_tail: right_thred = 0.95
-obj, lambda_reg1, lambda_reg2, kfold = 'MSE', 100, 100, 5
+obj, lambda_reg1, lambda_reg2, kfold = 'MSE', 0, 100, 5
 gpd = True
 # Body
 generators = [
-    NormalBasis(),
     # SkewTBasis(df_grid=[5, 10], gamma_grid=[0.8, 1.2]),
     # GPDBasis(xi_grid=[-2, -1, -0.5, 0, 0.5, 1.0, 2.0]),
-    StudentTBasis(df_grid=[1, 5, 10, 30])
+    StudentTBasis(df_grid=[1, 5, 10, 30]),
+    NormalBasis()
 ]
 # generators = []
 gaussian_components = 10
+
+plt.rcParams.update({
+    'font.size': 14,
+    'axes.titlesize': 18,
+    'axes.labelsize': 16,
+    'xtick.labelsize': 14,
+    'ytick.labelsize': 14,
+    'legend.fontsize': 14,
+    'figure.titlesize': 20
+})
+
 # -----------------------------------------------------------------------------
 # 1. Data
 # -----------------------------------------------------------------------------
@@ -60,7 +72,7 @@ elif dataset == 'gaussian':
     means = [10, 10, 12, 13, 14]
     stds = [0.2, 2.5, 2, 2, 2]
     weights = [0.3, 0.3, 0.1, 0.2, 0.1]  # mix weight
-    np.random.seed(50)
+    np.random.seed(42)
     counts = np.random.multinomial(n_samples, weights)
     y_all = np.concatenate([
         np.random.normal(m, s, c) for m, s, c in zip(means, stds, counts)
@@ -186,7 +198,7 @@ reporter_out = RiskReporter(
 
 reporters = [('In-Sample', reporter_in), ('Out-of-Sample', reporter_out)]
 for stage_name, base_reporter in reporters:
-    group1_names = ['QM', 'GMM', 'GPD']
+    group1_names = ['MQ', 'GMM', 'GPD']
     group2_names = [n for n in base_reporter.preds.keys() if '_L1_' in n or '_k' in n]
 
     if is_single_l1:
@@ -203,10 +215,10 @@ for stage_name, base_reporter in reporters:
             sub_rep.plot_quantile(title=f"{stage_name} Quantile Plot")
             sub_rep.plot_zipf(title=f"{stage_name} Zipf Plot")
             sub_rep.plot_qq(title=f"{stage_name} QQ Plot")
-# --- C. Model Weights (QM) ---
-print("\n>>> Plotting QM Active Basis...")
+# --- C. Model Weights (MQ) ---
+print("\n>>> Plotting MQ Active Basis...")
 for name, m in last_fold['models'].items():
-    if 'QM' in name:
+    if 'MQ' in name:
         print(f"Plotting {name}...")
         reporter_out.plot_active_basis(m, title=f"{name} Active Basis")
 
@@ -214,6 +226,6 @@ for name, m in last_fold['models'].items():
         target_iqr = q75 - q25
         # reporter_out.plot_effective_weights(m, target_scale=target_iqr)
 
-# weights = last_fold['models']['QM'].get_active_basis()
+# weights = last_fold['models']['MQ'].get_active_basis()
 res_in_aggr.to_csv(os.path.join(output_dir, "res_in.csv"))
 res_out_aggr.to_csv(os.path.join(output_dir, "res_out.csv"))

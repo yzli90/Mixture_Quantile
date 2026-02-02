@@ -2,24 +2,12 @@
 import numpy as np
 import pandas as pd
 import time
-import matplotlib.pyplot as plt
 from sklearn.model_selection import KFold
 from scipy.interpolate import interp1d
 
 from basis_generators import build_design_matrix
 from models import QuantileMixture, GaussianMixtureMLE, GPDMLE
 from metrics import RiskMetrics
-
-
-plt.rcParams.update({
-    'font.size': 12,
-    'axes.titlesize': 16,
-    'axes.labelsize': 14,
-    'xtick.labelsize': 12,
-    'ytick.labelsize': 12,
-    'legend.fontsize': 12,
-    'figure.titlesize': 18
-})
 
 
 def run_cv(y_all, generators, k=5, objective_type='MAE', seed=50, lambda_reg1=0.0, lambda_reg2=0.0, max_basis_k=None,
@@ -80,17 +68,17 @@ def run_cv(y_all, generators, k=5, objective_type='MAE', seed=50, lambda_reg1=0.
         models_dict = {}
         times_dict = {}
 
-        # 3. Fit QM
+        # 3. Fit MQ
         for obj in obj_list:
             obj_tag = obj.upper()
             for l1 in l1_list:
 
                 if len(l1_list) == 1 or l1 == 0:
-                    # m_name = f"QM ({obj_tag})"
-                    m_name = f"QM"
+                    # m_name = f"MQ ({obj_tag})"
+                    m_name = f"MQ"
                 else:
-                    # m_name = f"QM ({obj_tag}, $\lambda_1 = {l1}$)"
-                    m_name = f"QM ($\lambda_1 = {l1}$)"
+                    # m_name = f"MQ ({obj_tag}, $\lambda_1 = {l1}$)"
+                    m_name = f"MQ ($\lambda_1 = {l1}$)"
 
                 qm = QuantileMixture(objective_type=obj)
                 qm.fit(X_train, y_train_norm,
@@ -105,8 +93,8 @@ def run_cv(y_all, generators, k=5, objective_type='MAE', seed=50, lambda_reg1=0.
 
             if card:
                 for k_val in [1, 2]:
-                    # m_name = f"QM: ({obj_tag}, $k \le {k_val}$)"
-                    m_name = f"QM: ($k \le {k_val}$)"
+                    # m_name = f"MQ: ({obj_tag}, $k \le {k_val}$)"
+                    m_name = f"MQ: ($k \le {k_val}$)"
 
                     m_card = QuantileMixture(objective_type=obj)
                     m_card.fit(X_train, y_train_norm, basis_info=basis_info, lambda_l1=0,
